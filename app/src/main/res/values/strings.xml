@@ -1,0 +1,270 @@
+<resources>
+    <string name="app_name">RWithoutG</string>
+    <string name="greeting_image_description">Greeting Image</string>
+    <string name="reward_fab_description">Rewards</string>
+    <string name="reward_screen_title">Rewards Screen</string>
+    <string name="total_points">Points: %1$d</string>
+    <string name="task_fab_description">Tasks</string>
+    <string name="task_screen_title">Tasks Screen</string>
+    <string name="delete_task_description">Delete Task</string>
+    <string name="delete_tasks_count">Delete Tasks (%1$d)</string>
+    <string name="completed_task_screen_title">Completed Tasks</string>
+
+    <!-- Greeting Screen -->
+    <string name="default_image_description">Default image</string>
+
+    <!-- Edit Greeting Screen -->
+    <string name="preview_greeting">Preview Greeting</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="change_image">Change Image</string>
+    <string name="resize_image">Resize Image</string>
+    <string name="image_size">Image Size</string>
+    <string name="greeting_text_label">Greeting Text</string>
+    <string name="task_points_label">Points</string>
+    <string name="reward_title_label">Reward Title</string>
+    <string name="reward_cost_label">Cost (Points)</string>
+    <string name="reward_reusable_label">Reusable</string>
+    <string name="reward_reusable_badge">Reusable</string>
+    <string name="reward_reusable_desc">If enabled, this reward stays available after use.</string>
+    <string name="spend_reward">Spend</string>
+    <string name="character_count">%1$d / %2$d characters</string>
+    <string name="close_preview">Close Preview</string>
+
+    <!-- More Menu -->
+    <string name="user_name_placeholder">User Name</string>
+    <string name="signed_in">Signed in</string>
+    <string name="menu_history">History</string>
+    <string name="menu_change_greeting">Change Greeting Screen</string>
+    <string name="menu_notification_settings">Notification Settings</string>
+    <string name="menu_focus">Focus Mode</string>
+    <string name="notification_enable">Enable Notifications</string>
+    <string name="notification_time">Notification Time</string>
+    <string name="notification_channel_name">Task Reminders</string>
+    <string name="notification_channel_description">Reminders to register your daily tasks</string>
+    <string name="notification_title">Time to register your tasks!</string>
+    <string name="notification_content">Don\'t forget to log your progress and earn points.</string>
+    <string name="close">Close</string>
+
+    <!-- Navigation -->
+    <string name="nav_tasks">Tasks</string>
+    <string name="nav_rewards">Rewards</string>
+    <string name="nav_completed">Completed</string>
+    <string name="nav_notes">Storage</string>
+    <string name="nav_edit_greeting">Edit Greeting</string>
+    <string name="nav_focus">Focus</string>
+    <string name="nav_puzzle">Puzzle</string>
+    <string name="focus_enable_switch">Activate Focus Mode</string>
+    <string name="focus_usage_permission_title">Usage Access Required</string>
+    <string name="focus_usage_permission_desc">To detect when a blocked app is opened, RWithoutG needs usage access permission.</string>
+    <string name="focus_overlay_permission_title">Appear on Top Required</string>
+    <string name="focus_overlay_permission_desc">To show the blocking screen, RWithoutG needs permission to appear on top of other apps.</string>
+    <string name="grant_permission">Grant Permission</string>
+    <string name="focus_apps_list_header">Select Apps to Block</string>
+    <string name="search_apps_hint">Search apps…</string>
+    <string name="focus_active_notification">Focus Mode is ON</string>
+    <string name="focus_active_desc">Monitoring apps to keep you focused</string>
+    <string name="go_back">Go Back</string>
+    <string name="nav_create_task">Create Task</string>
+    <string name="nav_create_reward">Create Reward</string>
+    <string name="nav_edit_task">Edit Task</string>
+    <string name="nav_edit_reward">Edit Reward</string>
+    <string name="nav_add_task_selection">Add Task</string>
+    <string name="nav_add_reward_selection">Add Reward</string>
+    <string name="nav_task_templates">Select Template</string>
+    <string name="nav_reward_templates">Select Reward Template</string>
+    <string name="nav_create_slip_up">Create Slip-up</string>
+    <string name="back">Back</string>
+    <string name="more_options">More options</string>
+    <string name="completed_header">Completed</string>
+    <string name="today_summary_label">TODAY\'S SUMMARY</string>
+    <string name="gains_label">GAINS</string>
+    <string name="tasks_count">%1$d Tasks</string>
+    <string name="activity_history">Activity History</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="points_suffix">pts</string>
+    <string name="spent_today_label">SPENT TODAY</string>
+    <string name="slip_ups_today_label">SLIP-UPS TODAY</string>
+    <string name="reward_spent_label">Reward Spent</string>
+    <string name="bad_habit_label_short">Bad Habit</string>
+    <string name="times_suffix">times</string>
+    <string name="bonus_points_label"> (+10)</string>
+    <string name="undo_description">Undo</string>
+
+    <!-- Statistics -->
+    <string name="stats_last_7_days">This Week</string>
+    <string name="stats_total_week">WEEK TOTAL</string>
+    <string name="stats_points_gained">pts gained</string>
+    <string name="stats_habits_completed">%1$d Habits Completed</string>
+    <string name="stats_activity">ACTIVITY</string>
+    <string name="stats_energy_focus">ENERGY FOCUS</string>
+
+    <!-- Dialogs -->
+    <string name="warning_title">Warning</string>
+    <string name="delete_completed_warning">Deleting completed tasks will also remove the points you gained from them. Proceed?</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Previews / Placeholders -->
+    <string name="preview_tasks_content">Tasks Screen Content</string>
+    <string name="preview_rewards_content">Rewards Screen Content</string>
+    <string name="preview_completed_tasks_content">Complete Tasks Screen Content</string>
+    <string name="select_icon_label">Select Icon</string>
+    <string name="task_title_label">Task Title</string>
+    <string name="save_task">Save Task</string>
+    <string name="update_task">Update Task</string>
+    <string name="no_tasks_yet">No tasks yet. Add some!</string>
+    <string name="no_pending_tasks">No pending tasks. Great job!</string>
+    <string name="no_tasks_match_filters">No tasks match your filters.</string>
+    <string name="no_completed_tasks">No completed tasks yet.</string>
+    <string name="no_rewards_yet">No rewards yet. Add some!</string>
+    <string name="no_rewards_title">No rewards yet.</string>
+    <string name="add_some_rewards">Add some!</string>
+    <string name="no_notes_yet">No notes yet. Add some!</string>
+    <string name="add_note_hint">Add a note…</string>
+    <string name="delete_note">Delete Note</string>
+    <string name="all_notes">All Notes</string>
+    <string name="items_selected">%1$d selected</string>
+    <string name="edit">Edit</string>
+    <string name="close_selection">Close selection</string>
+    <string name="note_editor_title">Editor</string>
+    <string name="note_label_filename">FILENAME</string>
+    <string name="note_label_folder">FOLDER LOCATION</string>
+    <string name="note_label_content">NOTE CONTENT</string>
+    <string name="note_placeholder_title">Untitled Document</string>
+    <string name="note_placeholder_folder">Select category</string>
+    <string name="note_placeholder_content">Start typing here…</string>
+    <string name="save_note">Save Note</string>
+
+    <!-- Note Categories -->
+    <string name="note_category_personal">Personal</string>
+    <string name="note_category_work">Work</string>
+    <string name="note_category_ideas">Ideas</string>
+    <string name="note_category_others">Others</string>
+
+    <string name="points_missing_message">%1$d pts missing for \"%2$s\"</string>
+    <string name="points_short_label">-%1$d pts</string>
+    <string name="points_label">%1$d pts</string>
+    <string name="points_minus">%1$d</string>
+    <string name="add_task_manual">Criar do zero</string>
+    <string name="add_task_manual_desc">Personaliza totalmente a tua tarefa</string>
+    <string name="add_task_template">Usar um Template</string>
+    <string name="add_task_template_desc">Choose from recommended habits</string>
+    <string name="add_slip_up_manual">Register Bad Habit</string>
+    <string name="add_slip_up_manual_desc">Create a new custom slip-up</string>
+    <string name="add_reward_manual">Criar do zero</string>
+    <string name="add_reward_manual_desc">Personaliza totalmente a tua recompensa</string>
+    <string name="add_reward_template">Usar um Template</string>
+    <string name="add_reward_template_desc">Escolhe de recompensas sugeridas</string>
+    <string name="add_quick_task_hint">Adicionar tarefa rápida…</string>
+    <string name="redeem_reward_title">Spend %1$s?</string>
+    <string name="redeem_reward_message">Do you really want to spend your points on this reward?</string>
+    <string name="confirm">Confirm</string>
+    <string name="reward_spent_message">You spent %1$d pts on \"%2$s\"</string>
+    <string name="frequency_label">Frequency</string>
+    <string name="frequency_daily">Daily</string>
+    <string name="frequency_weekly">Weekly</string>
+    <string name="frequency_one_time">One-time</string>
+
+    <!-- Bad Habits -->
+    <string name="bad_habit_label">Bad Habit (Slip-up)</string>
+    <string name="bad_habit_desc">Logging this habit will subtract points. It stays in your list for easy logging.</string>
+    <string name="log_slip_up_title">Log a Slip-up</string>
+    <string name="log_slip_up_subtitle">Don\'t stress. Log it and get back on track.</string>
+    <string name="no_bad_habits_yet">No bad habits configured yet.</string>
+    <string name="points_per_execution">pts / execution</string>
+
+    <!-- Errors -->
+    <string name="error_title_required">Title is required</string>
+    <string name="error_points_positive">Points must be greater than 0</string>
+
+    <!-- Categories -->
+    <string name="category_label">Select Category</string>
+    <string name="category_none">None</string>
+    <string name="category_health">Health</string>
+    <string name="category_home">Home</string>
+    <string name="category_work">Work</string>
+    <string name="category_animals">Animals</string>
+    <string name="category_personal">Personal</string>
+
+    <!-- Difficulty -->
+    <string name="difficulty_label">Difficulty</string>
+    <string name="difficulty_easy">EASY</string>
+    <string name="difficulty_medium">MEDIUM</string>
+    <string name="difficulty_hard">HARD</string>
+    <string name="difficulty_epic">EPIC</string>
+
+    <!-- Filter -->
+    <string name="filter_all">All</string>
+    <string name="filter_tasks">Tasks</string>
+    <string name="filter_slipups">Slipups</string>
+    <string name="filter_rewards">Rewards</string>
+    <string name="filter_label">Filters</string>
+    <string name="clean_filters">Clean filters</string>
+    <string name="filter_frequency">Frequency</string>
+
+    <!-- Icon Labels -->
+    <string name="icon_default">Default</string>
+    <string name="icon_work">Work</string>
+    <string name="icon_fitness">Fitness</string>
+    <string name="icon_book">Book</string>
+    <string name="icon_code">Code</string>
+    <string name="icon_meditation">Meditation</string>
+    <string name="icon_cleaning">Cleaning</string>
+    <string name="icon_study">Study</string>
+    <string name="icon_health">Health</string>
+    <string name="icon_shopping">Shopping</string>
+    <string name="icon_home">Home</string>
+    <string name="icon_pets">Pets</string>
+    <string name="icon_water">Water</string>
+    <string name="icon_garden">Garden</string>
+    <string name="icon_chicken">Chicken</string>
+    <string name="icon_dance">Dance</string>
+    <string name="icon_cow">Cow</string>
+    <string name="icon_run">Run</string>
+    <string name="icon_bike">Bicycle</string>
+    <string name="icon_sleep">Sleep</string>
+    <string name="icon_social">Social</string>
+    <string name="icon_food">Food</string>
+    <string name="icon_coffee">Coffee</string>
+    <string name="icon_game">Game</string>
+    <string name="icon_movie">Movie</string>
+    <string name="icon_travel">Travel</string>
+    <string name="icon_music">Music</string>
+    <string name="icon_relax">Relax</string>
+    <string name="icon_event">Event</string>
+    <string name="icon_cake">Cake</string>
+    <string name="icon_hobby">Hobby</string>
+    <string name="icon_camera">Camera</string>
+    <string name="icon_theater">Theater</string>
+
+    <string name="preview_label">Live Preview</string>
+    <string name="task_name_placeholder">e.g., Do the laundry</string>
+    <string name="task_name_title">What\'s the task?</string>
+    <string name="points_selector_label">Points</string>
+    <string name="target_progress_label">Progress Goal (times)</string>
+    <string name="optional_label">Optional Task</string>
+    <string name="optional_desc">Optional tasks appear at the bottom of the list and don\'t clutter your main view.</string>
+    <string name="optional_tag">Optional</string>
+    <string name="optional_tasks_header">Optional Tasks</string>
+    <string name="other_days_tasks_header">Other Days Tasks</string>
+    <string name="no_target_label">No goal (1x)</string>
+    <string name="times_label">%1$d times</string>
+    <string name="decrease_label">Decrease</string>
+    <string name="increase_label">Increase</string>
+    <string name="no_notes_in_category">No notes in this category.</string>
+    <string name="untitled_note">Untitled</string>
+    <string name="add_note_description">Add Note</string>
+    <string name="delete_description">Delete</string>
+
+    <string name="active_days_label">Active days</string>
+    <string name="select_days_label">Select Days</string>
+    <string name="days_selector_hint">If no days are selected, the task appears every day.</string>
+    <string name="day_mon_short">M</string>
+    <string name="day_tue_short">T</string>
+    <string name="day_wed_short">W</string>
+    <string name="day_thu_short">T</string>
+    <string name="day_fri_short">F</string>
+    <string name="day_sat_short">S</string>
+    <string name="day_sun_short">S</string>
+</resources>

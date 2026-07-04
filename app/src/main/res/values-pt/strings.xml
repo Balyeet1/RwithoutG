@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">RewardWithoutGuilt</string>
+    <string name="greeting_image_description">Imagem de saudação</string>
+    <string name="reward_fab_description">Recompensas</string>
+    <string name="reward_screen_title">Tela de Recompensas</string>
+    <string name="total_points">Pontos: %1$d</string>
+    <string name="task_fab_description">Tarefas</string>
+    <string name="task_screen_title">Tela de Tarefas</string>
+    <string name="delete_task_description">Excluir Tarefa</string>
+    <string name="delete_tasks_count">Excluir Tarefas (%1$d)</string>
+    <string name="completed_task_screen_title">Tarefas Concluídas</string>
+
+    <!-- Greeting Screen -->
+    <string name="default_image_description">Imagem padrão</string>
+
+    <!-- Edit Greeting Screen -->
+    <string name="preview_greeting">Visualizar Saudação</string>
+    <string name="save">Salvar</string>
+    <string name="delete">Excluir</string>
+    <string name="change_image">Alterar Imagem</string>
+    <string name="resize_image">Redimensionar Imagem</string>
+    <string name="image_size">Tamanho da Imagem</string>
+    <string name="greeting_text_label">Texto de Saudação</string>
+    <string name="task_points_label">Pontos</string>
+    <string name="reward_title_label">Título da Recompensa</string>
+    <string name="reward_cost_label">Custo (Pontos)</string>
+    <string name="reward_reusable_label">Reutilizável</string>
+    <string name="reward_reusable_badge">Reutilizável</string>
+    <string name="reward_reusable_desc">Se ativado, esta recompensa continuará disponível após o uso.</string>
+    <string name="spend_reward">Gastar</string>
+    <string name="character_count">%1$d / %2$d caracteres</string>
+    <string name="close_preview">Fechar Visualização</string>
+
+    <!-- More Menu -->
+    <string name="user_name_placeholder">Nome do Usuário</string>
+    <string name="signed_in">Login</string>
+    <string name="menu_history">Histórico</string>
+    <string name="menu_change_greeting">Alterar Tela de Saudação</string>
+    <string name="menu_notification_settings">Configurações de Notificação</string>
+    <string name="menu_focus">Modo Foco</string>
+    <string name="notification_enable">Ativar Notificações</string>
+    <string name="notification_time">Hora da Notificação</string>
+    <string name="notification_channel_name">Lembretes de Tarefas</string>
+    <string name="notification_channel_description">Lembretes para registar as tuas tarefas diárias</string>
+    <string name="notification_title">Hora de registar as tuas tarefas!</string>
+    <string name="notification_content">Não te esqueças de registar o teu progresso e ganhar pontos.</string>
+    <string name="close">Fechar</string>
+
+    <!-- Navigation -->
+    <string name="nav_tasks">Tarefas</string>
+    <string name="nav_rewards">Recompensas</string>
+    <string name="nav_completed">Concluídas</string>
+    <string name="nav_notes">Armazenamento do Telefone</string>
+    <string name="nav_edit_greeting">Editar Saudação</string>
+    <string name="nav_focus">Foco</string>
+    <string name="nav_puzzle">Quebra-cabeça</string>
+    <string name="focus_enable_switch">Ativar Modo Foco</string>
+    <string name="focus_usage_permission_title">Acesso de Uso Necessário</string>
+    <string name="focus_usage_permission_desc">Para detetar quando uma aplicação bloqueada é aberta, o RWithoutG precisa de permissão de acesso de uso.</string>
+    <string name="focus_overlay_permission_title">Sobreposição Necessária</string>
+    <string name="focus_overlay_permission_desc">Para mostrar o ecrã de bloqueio, o RWithoutG precisa de permissão para aparecer sobre outras aplicações.</string>
+    <string name="grant_permission">Conceder Permissão</string>
+    <string name="focus_apps_list_header">Selecionar Apps a Bloquear</string>
+    <string name="search_apps_hint">Procurar apps…</string>
+    <string name="focus_active_notification">Modo Foco Ativado</string>
+    <string name="focus_active_desc">Monitorizando aplicações para manter o seu foco</string>
+    <string name="go_back">Voltar</string>
+    <string name="nav_create_task">Criar Tarefa</string>
+    <string name="nav_create_reward">Criar Recompensa</string>
+    <string name="nav_edit_task">Editar Tarefa</string>
+    <string name="nav_edit_reward">Editar Recompensa</string>
+    <string name="nav_add_task_selection">Adicionar Tarefa</string>
+    <string name="nav_add_reward_selection">Adicionar Recompensa</string>
+    <string name="nav_task_templates">Selecionar Template</string>
+    <string name="nav_reward_templates">Selecionar Template de Recompensa</string>
+    <string name="nav_create_slip_up">Criar Escorregão</string>
+    <string name="back">Voltar</string>
+    <string name="more_options">Mais opções</string>
+    <string name="completed_header">Concluídas</string>
+    <string name="today_summary_label">RESUMO DE HOJE</string>
+    <string name="gains_label">GANHOS</string>
+    <string name="tasks_count">%1$d Tarefas</string>
+    <string name="activity_history">Histórico de Atividade</string>
+    <string name="today">Hoje</string>
+    <string name="yesterday">Ontem</string>
+    <string name="points_suffix">pts</string>
+    <string name="spent_today_label">GASTO HOJE</string>
+    <string name="slip_ups_today_label">ESCORREGÕES HOJE</string>
+    <string name="reward_spent_label">Recompensa Gasta</string>
+    <string name="bad_habit_label_short">Mau Hábito</string>
+    <string name="times_suffix">vezes</string>
+    <string name="bonus_points_label"> (+10)</string>
+    <string name="undo_description">Desfazer</string>
+
+    <!-- Statistics -->
+    <string name="stats_last_7_days">Esta Semana</string>
+    <string name="stats_total_week">TOTAL DA SEMANA</string>
+    <string name="stats_points_gained">pts ganhos</string>
+    <string name="stats_habits_completed">%1$d Hábitos Completados</string>
+    <string name="stats_activity">ATIVIDADE</string>
+    <string name="stats_energy_focus">FOCO DE ENERGIA</string>
+
+    <!-- Dialogs -->
+    <string name="warning_title">Aviso</string>
+    <string name="delete_completed_warning">A exclusão de tarefas concluídas também removerá os pontos que você ganhou com elas. Prosseguir?</string>
+    <string name="cancel">Cancelar</string>
+
+    <!-- Previews / Placeholders -->
+    <string name="preview_tasks_content">Conteúdo da Tela de Tarefas</string>
+    <string name="preview_rewards_content">Conteúdo da Tela de Recompensas</string>
+    <string name="preview_completed_tasks_content">Conteúdo da Tela de Tarefas Concluídas</string>
+    <string name="select_icon_label">Selecionar Ícone</string>
+    <string name="task_title_label">Título da Tarefa</string>
+    <string name="save_task">Salvar Tarefa</string>
+    <string name="update_task">Atualizar Tarefa</string>
+    <string name="no_tasks_yet">Nenhuma tarefa ainda. Adicione algumas!</string>
+    <string name="no_pending_tasks">Nenhuma tarefa pendente. Bom trabalho!</string>
+    <string name="no_tasks_match_filters">Nenhuma tarefa corresponde aos filtros.</string>
+    <string name="no_completed_tasks">Nenhuma tarefa concluída ainda.</string>
+    <string name="no_rewards_yet">Nenhuma recompensa ainda. Adicione algumas!</string>
+    <string name="no_rewards_title">Nenhuma recompensa ainda.</string>
+    <string name="add_some_rewards">Adicione alguma!</string>
+    <string name="no_notes_yet">Nenhuma nota ainda. Adicione algumas!</string>
+    <string name="add_note_hint">Adicionar nota…</string>
+    <string name="delete_note">Excluir Nota</string>
+    <string name="all_notes">Todas as Notas</string>
+    <string name="items_selected">%1$d selecionado(s)</string>
+    <string name="edit">Editar</string>
+    <string name="close_selection">Fechar seleção</string>
+    <string name="note_editor_title">Editor</string>
+    <string name="note_label_filename">NOME DO FICHEIRO</string>
+    <string name="note_label_folder">LOCALIZAÇÃO DA PASTA</string>
+    <string name="note_label_content">CONTEÚDO DA NOTA</string>
+    <string name="note_placeholder_title">Documento sem título</string>
+    <string name="note_placeholder_folder">Selecionar categoria</string>
+    <string name="note_placeholder_content">Começa a escrever aqui…</string>
+    <string name="save_note">Guardar Nota</string>
+
+    <!-- Note Categories -->
+    <string name="note_category_personal">Pessoal</string>
+    <string name="note_category_work">Trabalho</string>
+    <string name="note_category_ideas">Ideias</string>
+    <string name="note_category_others">Outros</string>
+
+    <string name="add_task_manual">Criar do zero</string>
+    <string name="add_task_manual_desc">Personaliza totalmente a tua tarefa</string>
+    <string name="add_task_template">Usar um Template</string>
+    <string name="add_task_template_desc">Escolhe de hábitos recomendados</string>
+    <string name="add_slip_up_manual">Registar Mau Hábito</string>
+    <string name="add_slip_up_manual_desc">Cria um novo escorregão personalizado</string>
+    <string name="add_reward_manual">Criar do zero</string>
+    <string name="add_reward_manual_desc">Personaliza totalmente a tua recompensa</string>
+    <string name="add_reward_template">Usar um Template</string>
+    <string name="add_reward_template_desc">Escolhe de recompensas sugeridas</string>
+    <string name="add_quick_task_hint">Adicionar tarefa rápida…</string>
+    <string name="points_missing_message">Faltam %1$d pts para \"%2$s\"</string>
+    <string name="points_short_label">-%1$d pts</string>
+    <string name="points_label">%1$d pts</string>
+    <string name="points_minus">%1$d</string>
+    <string name="redeem_reward_title">Redimir %1$s?</string>
+    <string name="redeem_reward_message">Tens a certeza que queres gastar os teus pontos nesta recompensa?</string>
+    <string name="confirm">Confirmar</string>
+    <string name="reward_spent_message">Gastaste %1$d pts em \"%2$s\"</string>
+    <string name="frequency_label">Frequência</string>
+    <string name="frequency_daily">Diária</string>
+    <string name="frequency_weekly">Semanal</string>
+    <string name="frequency_one_time">Única</string>
+
+    <!-- Bad Habits -->
+    <string name="bad_habit_label">Mau Hábito (Escorregão)</string>
+    <string name="bad_habit_desc">Registar este hábito subtrairá pontos. Ele permanece na sua lista para facilitar o registo.</string>
+    <string name="log_slip_up_title">Registar um Escorregão</string>
+    <string name="log_slip_up_subtitle">Não se estresse. Registe-o e volte ao caminho certo.</string>
+    <string name="no_bad_habits_yet">Nenhum mau hábito configurado ainda.</string>
+    <string name="points_per_execution">pts / execução</string>
+
+    <!-- Errors -->
+    <string name="error_title_required">O título é obrigatório</string>
+    <string name="error_points_positive">Os pontos devem ser maiores que 0</string>
+
+    <!-- Categories -->
+    <string name="category_label">Categoria</string>
+    <string name="category_none">Nenhuma</string>
+    <string name="category_health">Saúde</string>
+    <string name="category_home">Casa</string>
+    <string name="category_work">Trabalho</string>
+    <string name="category_animals">Animais</string>
+    <string name="category_personal">Pessoal</string>
+
+    <!-- Difficulty -->
+    <string name="difficulty_label">Dificuldade</string>
+    <string name="difficulty_easy">Fácil</string>
+    <string name="difficulty_moderate">Moderada</string>
+    <string name="difficulty_difficult">Difícil</string>
+
+    <!-- Filter -->
+    <string name="filter_all">Todos</string>
+    <string name="filter_tasks">Tarefas</string>
+    <string name="filter_slipups">Escorregões</string>
+    <string name="filter_rewards">Recompensas</string>
+    <string name="filter_label">Filtros</string>
+    <string name="clean_filters">Limpar filtros</string>
+    <string name="filter_frequency">Frequência</string>
+
+    <!-- Icon Labels -->
+    <string name="icon_default">Padrão</string>
+    <string name="icon_work">Trabalho</string>
+    <string name="icon_fitness">Academia</string>
+    <string name="icon_book">Livro</string>
+    <string name="icon_code">Código</string>
+    <string name="icon_meditation">Meditação</string>
+    <string name="icon_cleaning">Limpeza</string>
+    <string name="icon_study">Estudo</string>
+    <string name="icon_health">Saúde</string>
+    <string name="icon_shopping">Compras</string>
+    <string name="icon_home">Casa</string>
+    <string name="icon_pets">Pets</string>
+    <string name="icon_water">Água</string>
+    <string name="icon_garden">Jardim</string>
+    <string name="icon_chicken">Galinha</string>
+    <string name="icon_dance">Dança</string>
+    <string name="icon_cow">Vaca</string>
+    <string name="icon_run">Correr</string>
+    <string name="icon_bike">Bicicleta</string>
+    <string name="icon_sleep">Sono</string>
+    <string name="icon_social">Social</string>
+    <string name="icon_food">Comida</string>
+    <string name="icon_coffee">Café</string>
+    <string name="icon_game">Jogo</string>
+    <string name="icon_movie">Filme</string>
+    <string name="icon_travel">Viagem</string>
+    <string name="icon_music">Música</string>
+    <string name="icon_relax">Relaxar</string>
+    <string name="icon_event">Evento</string>
+    <string name="icon_cake">Bolo</string>
+    <string name="icon_hobby">Hobby</string>
+    <string name="icon_camera">Câmera</string>
+    <string name="icon_theater">Teatro</string>
+
+    <string name="preview_label">Visualização</string>
+    <string name="task_name_placeholder">e.g., Lavar a roupa</string>
+    <string name="task_name_title">Qual é a tarefa?</string>
+    <string name="points_selector_label">Pontos</string>
+    <string name="target_progress_label">Meta de Progresso (vezes)</string>
+    <string name="optional_label">Tarefa Opcional</string>
+    <string name="optional_desc">Tarefas opcionais aparecem no final da lista e não poluem a tua visão principal.</string>
+    <string name="optional_tag">Opcional</string>
+    <string name="optional_tasks_header">Tarefas Opcionais</string>
+    <string name="other_days_tasks_header">Tarefas de Outros Dias</string>
+    <string name="no_target_label">Sem meta (1x)</string>
+    <string name="times_label">%1$d vezes</string>
+    <string name="decrease_label">Diminuir</string>
+    <string name="increase_label">Aumentar</string>
+    <string name="no_notes_in_category">Nenhuma nota nesta categoria.</string>
+    <string name="untitled_note">Sem título</string>
+    <string name="add_note_description">Adicionar Nota</string>
+    <string name="delete_description">Excluir</string>
+
+    <string name="active_days_label">Dias ativos</string>
+    <string name="select_days_label">Selecionar Dias</string>
+    <string name="days_selector_hint">Se nenhum dia for selecionado, a tarefa aparecerá todos os dias.</string>
+    <string name="day_mon_short">S</string>
+    <string name="day_tue_short">T</string>
+    <string name="day_wed_short">Q</string>
+    <string name="day_thu_short">Q</string>
+    <string name="day_fri_short">S</string>
+    <string name="day_sat_short">S</string>
+    <string name="day_sun_short">D</string>
+</resources>
