@@ -112,6 +112,8 @@
     <string name="select_icon_label">Select Icon</string>
     <string name="task_title_label">Task Title</string>
     <string name="save_task">Save Task</string>
+    <string name="advanced_task_settings">Advanced Task Settings</string>
+    <string name="advanced_reward_settings">Advanced Reward Settings</string>
     <string name="update_task">Update Task</string>
     <string name="no_tasks_yet">No tasks yet. Add some!</string>
     <string name="no_pending_tasks">No pending tasks. Great job!</string>

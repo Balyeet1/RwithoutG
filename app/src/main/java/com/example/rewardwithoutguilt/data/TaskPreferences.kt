@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.Calendar
 import java.util.UUID
+import androidx.datastore.preferences.core.longPreferencesKey
 
 private val Context.taskDataStore by preferencesDataStore(name = Constants.PREFS_TASK)
 
@@ -121,6 +122,10 @@ class TaskPreferences(private val context: Context) {
         private val OPTIONAL_TASKS_EXPANDED_KEY = booleanPreferencesKey("optional_tasks_expanded")
         private val OTHER_DAYS_TASKS_EXPANDED_KEY = booleanPreferencesKey("other_days_tasks_expanded")
         
+        private val DAILY_XP_KEY = intPreferencesKey("daily_xp")
+        private val LAST_DAILY_XP_DATE_KEY = longPreferencesKey("last_daily_xp_date")
+        private val DAILY_CHECKPOINTS_KEY = intPreferencesKey("daily_checkpoints")
+        
         private const val DELIMITER_ITEM = ";"
         private const val DELIMITER_FIELD = "|"
     }
@@ -159,6 +164,23 @@ class TaskPreferences(private val context: Context) {
     }
 
     val totalXp: Flow<Int> = context.taskDataStore.data.map { it[TOTAL_XP_KEY] ?: 0 }
+
+    private fun isToday(timestamp: Long): Boolean {
+        if (timestamp == 0L) return false
+        val calNow = Calendar.getInstance()
+        val calLast = Calendar.getInstance().apply { timeInMillis = timestamp }
+        return calNow.get(Calendar.YEAR) == calLast.get(Calendar.YEAR) &&
+               calNow.get(Calendar.DAY_OF_YEAR) == calLast.get(Calendar.DAY_OF_YEAR)
+    }
+
+    val dailyXp: Flow<Int> = context.taskDataStore.data.map { preferences ->
+        val lastDate = preferences[LAST_DAILY_XP_DATE_KEY] ?: 0L
+        if (isToday(lastDate)) {
+            preferences[DAILY_XP_KEY] ?: 0
+        } else {
+            0
+        }
+    }
 
     suspend fun syncXpIfMissing() {
         context.taskDataStore.edit { preferences ->
@@ -210,6 +232,7 @@ class TaskPreferences(private val context: Context) {
     }
 
     suspend fun toggleTaskCompletion(taskId: String, forceUndo: Boolean = false) {
+        var piecesToAward = 0
         context.taskDataStore.edit { preferences ->
             val current = preferences[TASKS_KEY] ?: ""
             var recordedTask: Task? = null
@@ -232,6 +255,14 @@ class TaskPreferences(private val context: Context) {
                         val pointsToSubtract = if (task.isCompleted && task.targetProgress > 1) task.points + Constants.BONUS_POINTS else task.points
                         val currentXp = preferences[TOTAL_XP_KEY] ?: 0
                         preferences[TOTAL_XP_KEY] = (currentXp - pointsToSubtract).coerceAtLeast(0)
+                        
+                        // Update daily progress
+                        val now = System.currentTimeMillis()
+                        val lastDate = preferences[LAST_DAILY_XP_DATE_KEY] ?: 0L
+                        val currentDailyXp = if (isToday(lastDate)) preferences[DAILY_XP_KEY] ?: 0 else 0
+                        val newDailyXp = (currentDailyXp - pointsToSubtract).coerceAtLeast(0)
+                        preferences[DAILY_XP_KEY] = newDailyXp
+                        preferences[LAST_DAILY_XP_DATE_KEY] = now
                         
                         val history = (preferences[COMPLETED_HISTORY_KEY] ?: "").split(DELIMITER_ITEM).toMutableList()
                         val idx = history.indexOfLast { it.contains("$DELIMITER_FIELD$taskId$DELIMITER_FIELD") }
@@ -259,6 +290,28 @@ class TaskPreferences(private val context: Context) {
                         
                         val currentXp = preferences[TOTAL_XP_KEY] ?: 0
                         preferences[TOTAL_XP_KEY] = currentXp + pointsEarned
+                        
+                        // Update daily progress
+                        val now = System.currentTimeMillis()
+                        val lastDate = preferences[LAST_DAILY_XP_DATE_KEY] ?: 0L
+                        val currentDailyXp = if (isToday(lastDate)) preferences[DAILY_XP_KEY] ?: 0 else 0
+                        val currentCheckpoints = if (isToday(lastDate)) preferences[DAILY_CHECKPOINTS_KEY] ?: 0 else 0
+
+                        val newDailyXp = (currentDailyXp + pointsEarned).coerceAtLeast(0)
+                        preferences[DAILY_XP_KEY] = newDailyXp
+                        preferences[LAST_DAILY_XP_DATE_KEY] = now
+
+                        var newCheckpoints = currentCheckpoints
+                        if (newDailyXp >= 100 && currentCheckpoints < 1) {
+                            newCheckpoints = 1
+                            piecesToAward++
+                        }
+                        if (newDailyXp >= 200 && currentCheckpoints < 2) {
+                            newCheckpoints = 2
+                            piecesToAward++
+                        }
+                        preferences[DAILY_CHECKPOINTS_KEY] = newCheckpoints
+                        
                         recordedTask = task.copy(points = pointsEarned, isCompleted = completed, currentProgress = newProgress, lastCompletedDate = System.currentTimeMillis())
                         return@mapNotNull recordedTask.toEntry()
                     }
@@ -269,6 +322,13 @@ class TaskPreferences(private val context: Context) {
                 val history = preferences[COMPLETED_HISTORY_KEY] ?: ""
                 val record = "${UUID.randomUUID()}$DELIMITER_FIELD${task.id}$DELIMITER_FIELD${task.title}$DELIMITER_FIELD${task.points}$DELIMITER_FIELD${task.lastCompletedDate}$DELIMITER_FIELD${task.iconName ?: ""}$DELIMITER_FIELD${task.color}$DELIMITER_FIELD${task.category?.name ?: ""}$DELIMITER_FIELD${task.currentProgress}$DELIMITER_FIELD${task.targetProgress}$DELIMITER_FIELD${if (task.isBadHabit) ActivityType.SLIP_UP else ActivityType.TASK}"
                 preferences[COMPLETED_HISTORY_KEY] = if (history.isBlank()) record else "$history$DELIMITER_ITEM$record"
+            }
+        }
+        
+        if (piecesToAward > 0) {
+            val puzzlePrefs = PuzzlePreferences(context)
+            for (i in 1..piecesToAward) {
+                puzzlePrefs.awardPuzzlePiece()
             }
         }
     }
@@ -339,19 +399,52 @@ class TaskPreferences(private val context: Context) {
     }
 
     suspend fun addXp(amount: Int) {
+        var piecesToAward = 0
         context.taskDataStore.edit { preferences ->
             val currentXp = preferences[TOTAL_XP_KEY] ?: 0
             preferences[TOTAL_XP_KEY] = currentXp + amount
+            
+            val now = System.currentTimeMillis()
+            val lastDate = preferences[LAST_DAILY_XP_DATE_KEY] ?: 0L
+            val currentDailyXp = if (isToday(lastDate)) preferences[DAILY_XP_KEY] ?: 0 else 0
+            val currentCheckpoints = if (isToday(lastDate)) preferences[DAILY_CHECKPOINTS_KEY] ?: 0 else 0
+
+            val newDailyXp = (currentDailyXp + amount).coerceAtLeast(0)
+            preferences[DAILY_XP_KEY] = newDailyXp
+            preferences[LAST_DAILY_XP_DATE_KEY] = now
+
+            var newCheckpoints = currentCheckpoints
+            if (newDailyXp >= 100 && currentCheckpoints < 1) {
+                newCheckpoints = 1
+                piecesToAward++
+            }
+            if (newDailyXp >= 200 && currentCheckpoints < 2) {
+                newCheckpoints = 2
+                piecesToAward++
+            }
+            preferences[DAILY_CHECKPOINTS_KEY] = newCheckpoints
+        }
+        
+        if (piecesToAward > 0) {
+            val puzzlePrefs = PuzzlePreferences(context)
+            for (i in 1..piecesToAward) {
+                puzzlePrefs.awardPuzzlePiece()
+            }
         }
     }
 
     suspend fun debugFastForward24h() {
         context.taskDataStore.edit { preferences ->
+            val lastDate = preferences[LAST_DAILY_XP_DATE_KEY] ?: 0L
+            if (lastDate != 0L) {
+                preferences[LAST_DAILY_XP_DATE_KEY] = lastDate - Constants.DAY_IN_MILLIS
+            }
+            
             val tasks = (preferences[TASKS_KEY] ?: "").split(DELIMITER_ITEM).mapNotNull { item ->
                 val task = item.toTask() ?: return@mapNotNull null
-                val lastDate = if (task.lastCompletedDate != 0L) task.lastCompletedDate - Constants.DAY_IN_MILLIS else 0L
+                val taskLastDate = if (task.lastCompletedDate != 0L) task.lastCompletedDate - Constants.DAY_IN_MILLIS else 0L
                 val createdAt = task.createdAt - Constants.DAY_IN_MILLIS
-                val shifted = task.copy(lastCompletedDate = lastDate, createdAt = createdAt)
+                val shifted = task.copy(lastCompletedDate = taskLastDate, createdAt = createdAt)
                 if (shifted.isExpired()) shifted.copy(isCompleted = false, currentProgress = 0).toEntry() else shifted.toEntry()
             }
             preferences[TASKS_KEY] = tasks.joinToString(DELIMITER_ITEM)

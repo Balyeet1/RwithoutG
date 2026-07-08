@@ -52,7 +52,7 @@ fun RewardsScreen(onEditReward: (String) -> Unit = {}) {
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             SelectionActionBar(
                 selectedCount = selectedRewardIds.size,
                 onCloseSelection = { selectedRewardIds = emptySet() },

@@ -660,7 +660,7 @@ fun CompletedTaskContent(
             contentPadding = PaddingValues(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 80.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            item {
+            /*item {
                 Text(
                     text = stringResource(R.string.completed_header),
                     style = MaterialTheme.typography.headlineMedium,
@@ -668,7 +668,7 @@ fun CompletedTaskContent(
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
-            }
+            }*/
             item {
                 StatsTabSwitcher(
                     selectedTab = selectedTab,

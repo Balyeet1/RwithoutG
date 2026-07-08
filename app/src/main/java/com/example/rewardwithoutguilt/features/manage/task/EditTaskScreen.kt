@@ -291,11 +291,15 @@ fun EditTaskScreenContent(
                     }
                     else -> {}
                 }
-                OptionalSelector(
-                    isOptional = isOptional,
-                    onOptionalChange = onOptionalChange,
-                    enabled = !isSaving
-                )
+                com.example.rewardwithoutguilt.components.AdvancedSettingsSection(
+                    title = stringResource(R.string.advanced_task_settings)
+                ) {
+                    OptionalSelector(
+                        isOptional = isOptional,
+                        onOptionalChange = onOptionalChange,
+                        enabled = !isSaving
+                    )
+                }
             }
         }
     }

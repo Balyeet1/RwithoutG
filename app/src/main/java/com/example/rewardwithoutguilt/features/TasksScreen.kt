@@ -138,12 +138,12 @@ fun TasksScreen(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-            LevelProgress(onClick = onNavigateToPuzzle)
+            Spacer(modifier = Modifier.height(4.dp))
+            //LevelProgress(onClick = onNavigateToPuzzle)
             ExpandableFilterSection(
                 filters = activeFilters,
                 onFiltersChange = { scope.launch { taskPrefs.updateFilters(it) } },
-                modifier = Modifier.padding(top = 16.dp)
+                modifier = Modifier.padding(top = 4.dp)
             )
 
             TaskList(

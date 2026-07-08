@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -295,14 +296,14 @@ fun FocusTimerSection(
                 modifier = Modifier.clickable(enabled = !isRunning) { isEditing = true }
             ) {
                 TimeSegment(value = hours)
-                Text(":", style = MaterialTheme.typography.displayMedium)
+                Text(":", style = MaterialTheme.typography.displayMedium.copy(fontSize = 48.sp))
                 TimeSegment(value = minutes)
-                Text(":", style = MaterialTheme.typography.displayMedium)
+                Text(":", style = MaterialTheme.typography.displayMedium.copy(fontSize = 48.sp))
                 TimeSegment(value = seconds)
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -318,7 +319,7 @@ fun FocusTimerSection(
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Quick Presets Section
         Row(
@@ -406,23 +407,23 @@ fun TimerEditField(
                 Text(
                     text = h,
                     style = MaterialTheme.typography.displayMedium.copy(
-                        fontSize = 64.sp,
+                        fontSize = 48.sp,
                         color = MaterialTheme.colorScheme.primary
                     )
                 )
-                Text(":", style = MaterialTheme.typography.displayMedium.copy(fontSize = 64.sp))
+                Text(":", style = MaterialTheme.typography.displayMedium.copy(fontSize = 48.sp))
                 Text(
                     text = m,
                     style = MaterialTheme.typography.displayMedium.copy(
-                        fontSize = 64.sp,
+                        fontSize = 48.sp,
                         color = MaterialTheme.colorScheme.primary
                     )
                 )
-                Text(":", style = MaterialTheme.typography.displayMedium.copy(fontSize = 64.sp))
+                Text(":", style = MaterialTheme.typography.displayMedium.copy(fontSize = 48.sp))
                 Text(
                     text = s,
                     style = MaterialTheme.typography.displayMedium.copy(
-                        fontSize = 64.sp,
+                        fontSize = 48.sp,
                         color = MaterialTheme.colorScheme.primary
                     )
                 )
@@ -436,7 +437,7 @@ fun TimeSegment(value: Int) {
     val locale = LocalConfiguration.current.locales[0]
     Text(
         text = String.format(locale, "%02d", value),
-        style = MaterialTheme.typography.displayMedium.copy(fontSize = 64.sp),
+        style = MaterialTheme.typography.displayMedium.copy(fontSize = 48.sp),
         modifier = Modifier
             .clip(MaterialTheme.shapes.small)
             .padding(horizontal = 4.dp)
@@ -447,7 +448,7 @@ fun TimeSegment(value: Int) {
 fun TimerButton(text: String, color: Color, textColor: Color, onClick: () -> Unit) {
     Box(
         modifier = Modifier
-            .size(80.dp)
+            .size(64.dp)
             .clip(CircleShape)
             .background(color)
             .clickable(onClick = onClick),
@@ -649,7 +650,7 @@ fun FocusToggleSection(
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(12.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
@@ -737,7 +738,7 @@ private fun toggleFocusService(context: Context, enabled: Boolean) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun FocusScreenContent(
     isFocusEnabled: Boolean,
@@ -767,83 +768,78 @@ fun FocusScreenContent(
         )
     }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.nav_focus)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
-                        )
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        Column(
+    Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp),
+            contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            // Timer Section
-            FocusTimerSection(
-                savedDurationMs = savedDurationMs,
-                timerEndTime = timerEndTime,
-                onStart = onStartTimer,
-                onReset = onResetTimer,
-                onDurationChange = onDurationChange
-            )
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                // Timer Section
+                FocusTimerSection(
+                    savedDurationMs = savedDurationMs,
+                    timerEndTime = timerEndTime,
+                    onStart = onStartTimer,
+                    onReset = onResetTimer,
+                    onDurationChange = onDurationChange
+                )
+            }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+            item {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            // Toggle Section (Manual)
-            FocusToggleSection(
-                isEnabled = isFocusEnabled,
-                onToggle = onToggleFocus
-            )
+                // Toggle Section (Manual)
+                FocusToggleSection(
+                    isEnabled = isFocusEnabled,
+                    onToggle = onToggleFocus
+                )
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            }
 
-            // App List Header
-            Text(
-                text = stringResource(R.string.focus_apps_list_header),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+            stickyHeader {
+                Column(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
+                    // App List Header
+                    Text(
+                        text = stringResource(R.string.focus_apps_list_header),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 8.dp, top = 8.dp)
+                    )
 
-            // Search Bar
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = onSearchQueryChange,
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text(stringResource(R.string.search_apps_hint)) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
+                    // Search Bar
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = onSearchQueryChange,
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text(stringResource(R.string.search_apps_hint)) },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
 
             if (isLoadingApps) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
             } else {
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(vertical = 8.dp)
-                ) {
-                    items(filteredApps, key = { it.packageName }) { app ->
-                        AppListItem(
-                            app = app,
-                            isBlocked = blockedApps.contains(app.packageName),
-                            onToggleBlocked = { isBlocked -> onToggleAppBlocked(app, isBlocked) }
-                         )
-                    }
+                items(filteredApps, key = { it.packageName }) { app ->
+                    AppListItem(
+                        app = app,
+                        isBlocked = blockedApps.contains(app.packageName),
+                        onToggleBlocked = { isBlocked -> onToggleAppBlocked(app, isBlocked) }
+                    )
                 }
             }
         }
@@ -881,4 +877,3 @@ fun FocusScreenPreview() {
         )
     }
 }
-

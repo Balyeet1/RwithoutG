@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.rewardwithoutguilt.data.ActivityType
+import com.example.rewardwithoutguilt.data.PuzzlePreferences
 import com.example.rewardwithoutguilt.data.TaskPreferences
 import com.example.rewardwithoutguilt.ui.theme.RewardWithoutGuiltTheme
 import kotlinx.coroutines.delay
@@ -43,28 +44,13 @@ fun LevelProgress(
 ) {
     val context = LocalContext.current
     val taskPrefs = remember { TaskPreferences(context) }
-    val totalXp by taskPrefs.totalXp.collectAsState(initial = 0)
+    val puzzlePrefs = remember { PuzzlePreferences(context) }
+    
+    val dailyXp by taskPrefs.dailyXp.collectAsState(initial = 0)
+    val unseenPieces by puzzlePrefs.unseenEarnedPieces.collectAsState(initial = 0)
 
-    // Dynamic leveling: Level 1 needs 1000, Level 2 needs 1500, Level 3 needs 2000...
-    val levelInfo = remember(totalXp) {
-        var level = 1
-        var accumulatedXp = 0
-        var xpRequiredForNext = 1000
-
-        while (totalXp >= accumulatedXp + xpRequiredForNext) {
-            accumulatedXp += xpRequiredForNext
-            level++
-            xpRequiredForNext += 500
-        }
-
-        val xpInLevel = totalXp - accumulatedXp
-        Triple(level, xpInLevel, xpRequiredForNext)
-    }
-
-    val level = levelInfo.first
-    val xpInLevel = levelInfo.second
-    val xpPerLevel = levelInfo.third
-    val progress = xpInLevel.toFloat() / xpPerLevel
+    val xpPerLevel = 200
+    val progress = (dailyXp.toFloat() / xpPerLevel).coerceIn(0f, 1f)
 
     val history by taskPrefs.completedHistory.collectAsState(initial = emptyList())
     var lastHistoryIds by remember { mutableStateOf<Set<String>?>(null) }
@@ -109,24 +95,6 @@ fun LevelProgress(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Level Circle
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.onSurface.copy(0.05f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = level.toString(),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Spacer(modifier = Modifier.width(15.dp))
-
             Column(
                 modifier = Modifier.weight(1f).padding(end = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -137,13 +105,28 @@ fun LevelProgress(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "NÍVEL $level",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                            letterSpacing = 0.5.sp
-                        )
+                        if (unseenPieces > 0) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.tertiary,
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(
+                                    text = "+$unseenPieces Pieces!",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onTertiary,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                )
+                            }
+                        } else {
+                            Text(
+                                text = "Daily Progress",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                letterSpacing = 0.5.sp
+                            )
+                        }
 
                         Text(
                             text = buildAnnotatedString {
@@ -151,7 +134,7 @@ fun LevelProgress(
                                     color = MaterialTheme.colorScheme.onSurface,
                                     fontWeight = FontWeight.Black
                                 )) {
-                                    append(xpInLevel.toString())
+                                    append(dailyXp.toString())
                                 }
                                 withStyle(style = SpanStyle(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),

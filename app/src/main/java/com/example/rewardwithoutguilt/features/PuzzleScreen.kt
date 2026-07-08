@@ -9,10 +9,12 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import kotlinx.coroutines.delay
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,6 +26,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
@@ -38,6 +41,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInRoot
@@ -45,7 +49,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -57,22 +60,10 @@ import com.example.rewardwithoutguilt.R
 import com.example.rewardwithoutguilt.data.PuzzlePreferences
 import com.example.rewardwithoutguilt.data.TaskPreferences
 import com.example.rewardwithoutguilt.ui.theme.RewardWithoutGuiltTheme
-import com.example.rewardwithoutguilt.util.Constants
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Random
 
-data class ConfettiParticle(
-    val id: Int,
-    val x: Float,
-    val y: Float,
-    val speedX: Float,
-    val speedY: Float,
-    val color: Color,
-    val size: Float,
-    val rotation: Float,
-    val rotationSpeed: Float
-)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -89,10 +80,8 @@ fun PuzzleScreen() {
     var isLoadingBitmaps by remember { mutableStateOf(true) }
 
     // Screen UI Local states (synced from preferences but updated instantly for responsiveness)
-    var placedPieces by remember { mutableStateOf(emptySet<String>()) }
+    var placedPieces by remember { mutableStateOf(emptyMap<String, String>()) }
     var trayPieces by remember { mutableStateOf(emptyList<String>()) }
-    var movesCount by remember { mutableStateOf(0) }
-    var timeElapsed by remember { mutableStateOf(0L) }
     var isHintEnabled by remember { mutableStateOf(false) }
 
     var isPreferencesLoaded by remember { mutableStateOf(false) }
@@ -105,12 +94,10 @@ fun PuzzleScreen() {
 
     // Board canvas positioning state
     var boardBounds by remember { mutableStateOf(Rect.Zero) }
+    val correctPieceGlows = remember { mutableStateMapOf<String, Animatable<Float, AnimationVector1D>>() }
 
-    // Snap / Drag handle helper
+    // Snap / Drag handle helper defined at screen level
     val onDropAction = { pieceKey: String, dropPos: Offset ->
-        movesCount++
-        scope.launch { puzzlePrefs.incrementMoves() }
-
         val localX = dropPos.x - boardBounds.left
         val localY = dropPos.y - boardBounds.top
 
@@ -124,26 +111,31 @@ fun PuzzleScreen() {
             val col = (localX / basePieceWidth).toInt().coerceIn(0, 5)
             val row = (localY / basePieceHeight).toInt().coerceIn(0, 5)
 
-            val correctKey = "${row + 1}_${col + 1}"
-            val targetCenterX = boardBounds.left + (col + 0.5f) * basePieceWidth
-            val targetCenterY = boardBounds.top + (row + 0.5f) * basePieceHeight
-
-            val distance = kotlin.math.hypot(dropPos.x - targetCenterX, dropPos.y - targetCenterY)
-            val snapRadius = basePieceWidth * 0.8f
-
-            if (pieceKey == correctKey || (distance < snapRadius && pieceKey == correctKey)) {
-                // Successfully placed!
-                placedPieces = placedPieces + pieceKey
+            val slotKey = "${row + 1}_${col + 1}"
+            
+            // Check if slot is empty
+            if (!placedPieces.containsKey(slotKey)) {
+                // Successfully placed on the board!
+                placedPieces = placedPieces + (slotKey to pieceKey)
                 trayPieces = trayPieces - pieceKey
                 selectedPieceKey = null
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
+                if (slotKey == pieceKey) {
+                    val animatable = Animatable(0f)
+                    correctPieceGlows[slotKey] = animatable
+                    scope.launch {
+                        animatable.animateTo(1f, tween(400))
+                        animatable.animateTo(0.2f, tween(400))
+                        animatable.animateTo(1f, tween(400))
+                        animatable.animateTo(0f, tween(400))
+                    }
+                }
+
                 scope.launch {
                     puzzlePrefs.saveGameState(
                         placed = placedPieces,
-                        tray = trayPieces,
-                        moves = movesCount,
-                        time = timeElapsed
+                        tray = trayPieces
                     )
                 }
             }
@@ -182,59 +174,40 @@ fun PuzzleScreen() {
     LaunchedEffect(Unit) {
         puzzlePrefs.placedPieces.collect { placed ->
             puzzlePrefs.trayPieces.collect { tray ->
-                puzzlePrefs.movesCount.collect { moves ->
-                    puzzlePrefs.timeElapsed.collect { time ->
-                        puzzlePrefs.isHintEnabled.collect { hint ->
-                            if (!isPreferencesLoaded) {
-                                placedPieces = placed
-                                trayPieces = tray
-                                movesCount = moves
-                                timeElapsed = time
-                                isHintEnabled = hint
-                                isPreferencesLoaded = true
+                puzzlePrefs.isHintEnabled.collect { hint ->
+                    if (!isPreferencesLoaded) {
+                        placedPieces = placed
+                        trayPieces = tray
+                        isHintEnabled = hint
+                        isPreferencesLoaded = true
 
-                                if (placed.size == 36) {
-                                    wasAlreadyCompleted = true
-                                }
-                            }
+                        if (placed.size == 36 && placed.all { it.key == it.value }) {
+                            wasAlreadyCompleted = true
                         }
                     }
                 }
             }
         }
+        scope.launch { puzzlePrefs.clearUnseenEarnedPieces() }
     }
 
-    // Initialize new game if preferences are empty and loaded
-    LaunchedEffect(isPreferencesLoaded, trayPieces, placedPieces) {
-        if (isPreferencesLoaded && trayPieces.isEmpty() && placedPieces.isEmpty()) {
-            val allKeys = mutableListOf<String>()
-            for (row in 1..6) {
-                for (col in 1..6) {
-                    allKeys.add("${row}_${col}")
-                }
-            }
-            allKeys.shuffle()
-            trayPieces = allKeys
-            puzzlePrefs.resetGame(allKeys)
-        }
-    }
 
-    // Timer (Stopwatch) flow
-    LaunchedEffect(isPreferencesLoaded, placedPieces.size) {
-        while (isPreferencesLoaded && placedPieces.size < 36) {
-            delay(1000L)
-            timeElapsed++
-            puzzlePrefs.updateTimeElapsed(timeElapsed)
-        }
-    }
 
-    val isVictory = isPreferencesLoaded && placedPieces.size == 36
+    val isVictory = isPreferencesLoaded && placedPieces.size == 36 && placedPieces.all { it.key == it.value }
+    val sweepProgress = remember { Animatable(0f) }
+
+
 
     // Award XP when victory happens in-game
     LaunchedEffect(isVictory) {
         if (isVictory && !wasAlreadyCompleted) {
             wasAlreadyCompleted = true
             taskPrefs.addXp(100)
+            delay(500) // Wait for shrink animations
+            sweepProgress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = 1500, easing = LinearEasing)
+            )
         }
     }
 
@@ -252,46 +225,26 @@ fun PuzzleScreen() {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(bottom = 16.dp),
+                        .padding(bottom = 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Header Section
-                    PuzzleHeader(
-                        placedCount = placedPieces.size,
-                        movesCount = movesCount,
-                        timeElapsed = timeElapsed,
-                        isHintEnabled = isHintEnabled,
-                        onToggleHint = {
-                            isHintEnabled = !isHintEnabled
-                            scope.launch { puzzlePrefs.setHintEnabled(isHintEnabled) }
-                        },
-                        onReset = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            val allKeys = mutableListOf<String>()
-                            for (row in 1..6) {
-                                for (col in 1..6) {
-                                    allKeys.add("${row}_${col}")
-                                }
-                            }
-                            allKeys.shuffle()
-                            placedPieces = emptySet()
-                            trayPieces = allKeys
-                            movesCount = 0
-                            timeElapsed = 0L
-                            wasAlreadyCompleted = false
-                            selectedPieceKey = null
-                            scope.launch {
-                                puzzlePrefs.resetGame(allKeys)
-                            }
-                        }
-                    )
+                    AnimatedVisibility(
+                        visible = !isVictory,
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically()
+                    ) {
+                        PuzzleHeader(
+                            placedCount = placedPieces.size
+                        )
+                    }
 
                     // Board Container
                     BoxWithConstraints(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         val availableWidth = constraints.maxWidth.toFloat()
@@ -328,9 +281,27 @@ fun PuzzleScreen() {
                                 .pointerInput(Unit) {
                                     detectTapGestures { tapOffset ->
                                         if (selectedPieceKey != null) {
-                                            // Translate root screen coordinate for click
                                             val rootTapPos = boardBounds.topLeft + tapOffset
                                             onDropAction(selectedPieceKey!!, rootTapPos)
+                                        } else if (!isVictory) {
+                                            val boardWidth = boardBounds.width
+                                            val boardHeight = boardBounds.height
+                                            if (boardWidth > 0f && boardHeight > 0f) {
+                                                val col = (tapOffset.x / (boardWidth / 6f)).toInt().coerceIn(0, 5)
+                                                val row = (tapOffset.y / (boardHeight / 6f)).toInt().coerceIn(0, 5)
+                                                val slotKey = "${row + 1}_${col + 1}"
+                                                
+                                                val pieceKey = placedPieces[slotKey]
+                                                if (pieceKey != null) {
+                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                    placedPieces = placedPieces - slotKey
+                                                    trayPieces = trayPieces + pieceKey
+                                                    selectedPieceKey = pieceKey // Automatically select the removed piece
+                                                    scope.launch {
+                                                        puzzlePrefs.saveGameState(placedPieces, trayPieces)
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 },
@@ -339,17 +310,19 @@ fun PuzzleScreen() {
                         ) {
                             Canvas(modifier = Modifier.fillMaxSize()) {
                                 // Draw Grid Slots Placeholders / Guide lines
-                                val gridPaint = android.graphics.Paint().apply {
-                                    color = android.graphics.Color.WHITE
-                                    alpha = 15 // Very faint
-                                    strokeWidth = 1.5f
-                                    style = android.graphics.Paint.Style.STROKE
-                                }
-                                for (i in 1 until 6) {
-                                    // Vertical
-                                    drawContext.canvas.nativeCanvas.drawLine(i * basePieceWidth, 0f, i * basePieceWidth, boardHeight, gridPaint)
-                                    // Horizontal
-                                    drawContext.canvas.nativeCanvas.drawLine(0f, i * basePieceHeight, boardWidth, i * basePieceHeight, gridPaint)
+                                if (!isVictory) {
+                                    val gridPaint = android.graphics.Paint().apply {
+                                        color = android.graphics.Color.WHITE
+                                        alpha = 15 // Very faint
+                                        strokeWidth = 1.5f
+                                        style = android.graphics.Paint.Style.STROKE
+                                    }
+                                    for (i in 1 until 6) {
+                                        // Vertical
+                                        drawContext.canvas.nativeCanvas.drawLine(i * basePieceWidth, 0f, i * basePieceWidth, boardHeight, gridPaint)
+                                        // Horizontal
+                                        drawContext.canvas.nativeCanvas.drawLine(0f, i * basePieceHeight, boardWidth, i * basePieceHeight, gridPaint)
+                                    }
                                 }
 
                                 val outlinePaint = android.graphics.Paint().apply {
@@ -371,34 +344,62 @@ fun PuzzleScreen() {
                                 // Iterate 6x6 grid
                                 for (row in 0 until 6) {
                                     for (col in 0 until 6) {
-                                        val key = "${row + 1}_${col + 1}"
-                                        val bitmap = bitmaps[key]
+                                        val slotKey = "${row + 1}_${col + 1}"
+                                        val placedPieceKey = placedPieces[slotKey]
 
-                                        if (bitmap != null) {
-                                            // Coordinates matching jigsaw cropping coordinates
-                                            val gridLeft = col * basePieceWidth
-                                            val gridTop = row * basePieceHeight
-                                            val gridRight = (col + 1) * basePieceWidth
-                                            val gridBottom = (row + 1) * basePieceHeight
+                                        val gridLeft = col * basePieceWidth
+                                        val gridTop = row * basePieceHeight
+                                        val gridRight = (col + 1) * basePieceWidth
+                                        val gridBottom = (row + 1) * basePieceHeight
 
-                                            val drawLeft = gridLeft - if (col > 0) tabSize else 0f
-                                            val drawTop = gridTop - if (row > 0) tabSize else 0f
-                                            val drawRight = gridRight + if (col < 5) tabSize else 0f
-                                            val drawBottom = gridBottom + if (row < 5) tabSize else 0f
+                                        if (placedPieceKey != null) {
+                                            val bitmap = bitmaps[placedPieceKey]
+                                            if (bitmap != null) {
+                                                val pParts = placedPieceKey.split("_")
+                                                val pRow = pParts[0].toInt() - 1
+                                                val pCol = pParts[1].toInt() - 1
 
-                                            rectF.set(drawLeft, drawTop, drawRight, drawBottom)
+                                                val drawLeft = gridLeft - if (pCol > 0) tabSize else 0f
+                                                val drawTop = gridTop - if (pRow > 0) tabSize else 0f
+                                                val drawRight = gridRight + if (pCol < 5) tabSize else 0f
+                                                val drawBottom = gridBottom + if (pRow < 5) tabSize else 0f
 
-                                            if (placedPieces.contains(key)) {
-                                                // 1. Draw Piece outline (shadow effect)
-                                                for (i in 0 until offsets.size step 2) {
-                                                    val dx = offsets[i]
-                                                    val dy = offsets[i + 1]
-                                                    offsetRectF.set(rectF.left + dx, rectF.top + dy, rectF.right + dx, rectF.bottom + dy)
-                                                    drawContext.canvas.nativeCanvas.drawBitmap(bitmap, null, offsetRectF, outlinePaint)
+                                                rectF.set(drawLeft, drawTop, drawRight, drawBottom)
+
+                                                if (!isVictory) {
+                                                    val isCorrect = placedPieceKey == slotKey
+                                                    val glowAlphaValue = correctPieceGlows[slotKey]?.value ?: 0f
+                                                    val activePaint = if (isCorrect && glowAlphaValue > 0f) {
+                                                        android.graphics.Paint().apply {
+                                                            colorFilter = android.graphics.PorterDuffColorFilter(
+                                                                android.graphics.Color.GREEN,
+                                                                android.graphics.PorterDuff.Mode.SRC_IN
+                                                            )
+                                                            alpha = (glowAlphaValue * 255).toInt()
+                                                        }
+                                                    } else outlinePaint
+                                                    
+                                                    // Draw outline (shadow or green glow)
+                                                    for (i in 0 until offsets.size step 2) {
+                                                        val dx = offsets[i]
+                                                        val dy = offsets[i + 1]
+                                                        offsetRectF.set(rectF.left + dx, rectF.top + dy, rectF.right + dx, rectF.bottom + dy)
+                                                        drawContext.canvas.nativeCanvas.drawBitmap(bitmap, null, offsetRectF, activePaint)
+                                                    }
                                                 }
-                                                // 2. Draw normal full opacity piece
+                                                // Draw normal full opacity piece
                                                 drawContext.canvas.nativeCanvas.drawBitmap(bitmap, null, rectF, null)
-                                            } else if (isHintEnabled) {
+                                            }
+                                        } else if (isHintEnabled) {
+                                            val bitmap = bitmaps[slotKey]
+                                            if (bitmap != null) {
+                                                val drawLeft = gridLeft - if (col > 0) tabSize else 0f
+                                                val drawTop = gridTop - if (row > 0) tabSize else 0f
+                                                val drawRight = gridRight + if (col < 5) tabSize else 0f
+                                                val drawBottom = gridBottom + if (row < 5) tabSize else 0f
+                                                
+                                                rectF.set(drawLeft, drawTop, drawRight, drawBottom)
+                                                
                                                 // Draw faint hint image
                                                 val hintPaint = android.graphics.Paint().apply {
                                                     alpha = 35 // Faint watermark opacity
@@ -408,43 +409,156 @@ fun PuzzleScreen() {
                                         }
                                     }
                                 }
+
+                                // Draw sweep animation
+                                val progress = sweepProgress.value
+                                if (progress > 0f && progress < 1f) {
+                                    val w = size.width
+                                    val h = size.height
+                                    val flashWidth = w * 0.5f
+                                    val startX = -flashWidth + (w + flashWidth) * progress * 1.5f
+                                    
+                                    val brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            Color.Transparent,
+                                            Color.White.copy(alpha = 0.6f),
+                                            Color.Transparent
+                                        ),
+                                        start = Offset(startX, 0f),
+                                        end = Offset(startX + flashWidth, h)
+                                    )
+                                    drawRect(brush = brush, size = size)
+                                }
                             }
                         }
                     }
 
-                    // Tray Section Title
-                    Spacer(modifier = Modifier.height(16.dp))
+                    // Tray Section Title & Actions
+                    Spacer(modifier = Modifier.height(12.dp))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        horizontalArrangement = if (isVictory) Arrangement.Center else Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "Remaining Pieces (${trayPieces.size})",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        if (selectedPieceKey != null) {
+                        AnimatedVisibility(
+                            visible = !isVictory,
+                            enter = fadeIn() + expandVertically(),
+                            exit = fadeOut() + shrinkVertically()
+                        ) {
                             Text(
-                                text = "Select a spot on the board to place",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.SemiBold
+                                text = "Earned Pieces (${trayPieces.size})",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onBackground
                             )
+                        }
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            // Debug Button
+                            IconButton(
+                                onClick = {
+                                    val allKeysMap = mutableMapOf<String, String>()
+                                    for (row in 1..6) {
+                                        for (col in 1..6) {
+                                            val key = "${row}_${col}"
+                                            allKeysMap[key] = key
+                                        }
+                                    }
+                                    placedPieces = allKeysMap
+                                    trayPieces = emptyList()
+                                    selectedPieceKey = null
+                                    scope.launch {
+                                        puzzlePrefs.saveGameState(placedPieces, trayPieces)
+                                    }
+                                },
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Build,
+                                    contentDescription = "Auto Complete",
+                                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.5f),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            IconButton(
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    val allKeys = mutableListOf<String>()
+                                    for (row in 1..6) {
+                                        for (col in 1..6) {
+                                            allKeys.add("${row}_${col}")
+                                        }
+                                    }
+                                    allKeys.shuffle()
+                                    placedPieces = emptyMap()
+                                    trayPieces = emptyList()
+                                    wasAlreadyCompleted = false
+                                    selectedPieceKey = null
+                                    scope.launch {
+                                        puzzlePrefs.resetGame(allKeys)
+                                        sweepProgress.snapTo(0f)
+                                    }
+                                },
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Refresh,
+                                    contentDescription = "Redo",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            IconButton(
+                                onClick = {
+                                    isHintEnabled = !isHintEnabled
+                                    scope.launch { puzzlePrefs.setHintEnabled(isHintEnabled) }
+                                },
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Info,
+                                    contentDescription = "Preview",
+                                    tint = if (isHintEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
                     }
 
+                    AnimatedVisibility(
+                        visible = !isVictory && selectedPieceKey != null,
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically()
+                    ) {
+                        Text(
+                            text = "Select a spot on the board to place",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 2.dp)
+                        )
+                    }
+
                     // Scrollable pieces Tray
-                    LazyRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(140.dp)
-                            .padding(top = 8.dp),
+                    AnimatedVisibility(
+                        visible = !isVictory,
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically()
+                    ) {
+                        LazyRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp)
+                                .padding(top = 4.dp),
                         contentPadding = PaddingValues(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         items(items = trayPieces, key = { it }) { pieceKey ->
@@ -473,8 +587,8 @@ fun PuzzleScreen() {
 
                             Card(
                                 modifier = Modifier
-                                    .width(80.dp)
-                                    .height(115.dp)
+                                    .width(60.dp)
+                                    .height(86.dp)
                                     .onGloballyPositioned { itemBounds = it.boundsInRoot() }
                                     .border(
                                         width = if (isSelected) 3.dp else 1.dp,
@@ -537,13 +651,13 @@ fun PuzzleScreen() {
                             }
                         }
                     }
+                    }
                 }
 
                 // Drag and Drop Floating Piece Overlay
                 if (draggedPieceKey != null) {
                     val bitmap = bitmaps[draggedPieceKey!!]
                     if (bitmap != null) {
-                        // Approximate size equivalent to board piece size for scaling reference
                         val parts = draggedPieceKey!!.split("_")
                         val row = parts[0].toInt() - 1
                         val col = parts[1].toInt() - 1
@@ -588,36 +702,6 @@ fun PuzzleScreen() {
                     }
                 }
 
-                // Victory Celebration Overlay
-                AnimatedVisibility(
-                    visible = isVictory,
-                    enter = fadeIn() + scaleIn(initialScale = 0.9f),
-                    exit = fadeOut() + scaleOut(targetScale = 0.9f)
-                ) {
-                    ConfettiVictoryOverlay(
-                        timeString = formatTime(timeElapsed),
-                        moves = movesCount,
-                        onPlayAgain = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            val allKeys = mutableListOf<String>()
-                            for (row in 1..6) {
-                                for (col in 1..6) {
-                                    allKeys.add("${row}_${col}")
-                                }
-                            }
-                            allKeys.shuffle()
-                            placedPieces = emptySet()
-                            trayPieces = allKeys
-                            movesCount = 0
-                            timeElapsed = 0L
-                            wasAlreadyCompleted = false
-                            selectedPieceKey = null
-                            scope.launch {
-                                puzzlePrefs.resetGame(allKeys)
-                            }
-                        }
-                    )
-                }
             }
         }
     }
@@ -625,160 +709,45 @@ fun PuzzleScreen() {
 
 @Composable
 fun PuzzleHeader(
-    placedCount: Int,
-    movesCount: Int,
-    timeElapsed: Long,
-    isHintEnabled: Boolean,
-    onToggleHint: () -> Unit,
-    onReset: () -> Unit
+    placedCount: Int
 ) {
     val progress = placedCount.toFloat() / 36f
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(vertical = 8.dp, horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
+        // Progress Text
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
-                Text(
-                    text = "Puzzle Challenge",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Text(
-                    text = "Drag pieces to solve or tap to place",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                )
-            }
-
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                // Hint Button
-                IconButton(
-                    onClick = onToggleHint,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = if (isHintEnabled) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Info,
-                        contentDescription = "Hint",
-                        tint = if (isHintEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                // Reset Button
-                IconButton(
-                    onClick = onReset,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = "Reset Board",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+            Text(
+                text = "Progress",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+            )
+            Text(
+                text = "$placedCount / 36 pieces placed",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Stats Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Timer
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "TIME",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                    )
-                    Text(
-                        text = formatTime(timeElapsed),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                Divider(
-                    modifier = Modifier
-                        .height(30.dp)
-                        .width(1.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                )
-
-                // Progress Info
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "COMPLETED",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                    )
-                    Text(
-                        text = "$placedCount / 36",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                Divider(
-                    modifier = Modifier
-                        .height(30.dp)
-                        .width(1.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                )
-
-                // Moves Counter
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "MOVES",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                    )
-                    Text(
-                        text = "$movesCount",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.tertiary
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Progress Bar
         LinearProgressIndicator(
-            progress = progress,
+            progress = { progress },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(6.dp)
+                .height(8.dp)
                 .clip(CircleShape),
             color = MaterialTheme.colorScheme.primary,
             trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
@@ -786,217 +755,6 @@ fun PuzzleHeader(
     }
 }
 
-@Composable
-fun ConfettiVictoryOverlay(
-    timeString: String,
-    moves: Int,
-    onPlayAgain: () -> Unit
-) {
-    var particles by remember { mutableStateOf(emptyList<ConfettiParticle>()) }
-    val random = remember { Random() }
-    val density = LocalDensity.current
-
-    // Confetti particles loop
-    LaunchedEffect(Unit) {
-        val colors = listOf(
-            Color(0xFFD0BCFF), // Purple
-            Color(0xFFEFB8C8), // Pink
-            Color(0xFF6650a4), // Indigo
-            Color(0xFF6366F1), // Violet
-            Color(0xFFFFD700), // Gold
-            Color(0xFF3B82F6), // Blue
-            Color(0xFF10B981)  // Emerald
-        )
-        
-        // Spawn 80 particles
-        particles = List(80) { i ->
-            ConfettiParticle(
-                id = i,
-                x = random.nextFloat() * 1500f,
-                y = -random.nextFloat() * 400f,
-                speedX = (random.nextFloat() - 0.5f) * 6f,
-                speedY = 6f + random.nextFloat() * 8f,
-                color = colors[random.nextInt(colors.size)],
-                size = 12f + random.nextFloat() * 16f,
-                rotation = random.nextFloat() * 360f,
-                rotationSpeed = (random.nextFloat() - 0.5f) * 8f
-            )
-        }
-
-        while (true) {
-            particles = particles.map { p ->
-                val nextY = p.y + p.speedY
-                p.copy(
-                    x = p.x + p.speedX,
-                    y = if (nextY > 2500f) -50f else nextY,
-                    rotation = (p.rotation + p.rotationSpeed) % 360f
-                )
-            }
-            delay(16L) // ~60FPS
-        }
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.7f)),
-        contentAlignment = Alignment.Center
-    ) {
-        // Confetti Canvas
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            particles.forEach { p ->
-                rotate(degrees = p.rotation, pivot = Offset(p.x, p.y)) {
-                    drawRoundRect(
-                        color = p.color,
-                        topLeft = Offset(p.x - p.size / 2, p.y - p.size / 4),
-                        size = androidx.compose.ui.geometry.Size(p.size, p.size / 2),
-                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(4f, 4f)
-                    )
-                }
-            }
-        }
-
-        // Victory Card
-        Card(
-            modifier = Modifier
-                .width(320.dp)
-                .padding(24.dp)
-                .graphicsLayer(
-                    shadowElevation = with(density) { 24.dp.toPx() },
-                    shape = RoundedCornerShape(24.dp)
-                ),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "🎉",
-                    fontSize = 64.sp,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-
-                Text(
-                    text = "Puzzle Solved!",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "Congratulations! You successfully assembled all pieces of the puzzle.",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Stats Section
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "TIME",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                        )
-                        Text(
-                            text = timeString,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "MOVES",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                        )
-                        Text(
-                            text = "$moves",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.tertiary
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Reward alert
-                Surface(
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = "⭐ Earned +100 XP!",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Button(
-                    onClick = onPlayAgain,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Text(
-                        text = "Play Again",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-    }
-}
-
-private fun formatTime(seconds: Long): String {
-    val mins = seconds / 60
-    val secs = seconds % 60
-    return String.format("%02d:%02d", mins, secs)
-}
 
 @Preview(showBackground = true)
 @Composable

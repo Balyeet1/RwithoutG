@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -52,17 +53,15 @@ import com.example.rewardwithoutguilt.ui.theme.RewardWithoutGuiltTheme
 fun BottomBar(navController: NavHostController, screens: List<Screen>) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-    val bottomBarSize = remember(screens.size) { (screens.size * 80).dp }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(top = 8.dp, bottom = 8.dp),
+            .padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
         contentAlignment = Alignment.Center,
     ) {
         Surface(
-            modifier = Modifier.width(bottomBarSize),
             shape = RoundedCornerShape(50.dp),
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 8.dp,
@@ -70,8 +69,8 @@ fun BottomBar(navController: NavHostController, screens: List<Screen>) {
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         ) {
             Row(
-                modifier = Modifier.padding(horizontal = 1.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 screens.forEach { screen ->
@@ -104,68 +103,36 @@ private fun BottomBarItem(
     selected: Boolean,
     onNavigate: () -> Unit
 ) {
-    val contentColor by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colorScheme.primary
-        else MaterialTheme.colorScheme.onSurfaceVariant,
+    val iconColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = tween(durationMillis = 300),
-        label = "contentColor"
+        label = "iconColor"
     )
 
-    val backgroundColor by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
-        else Color.Transparent,
-        animationSpec = tween(durationMillis = 300),
-        label = "backgroundColor"
-    )
-
-    val alpha by animateFloatAsState(
-        targetValue = if (selected) 1f else 0.7f,
-        label = "alpha"
-    )
-
-    val scale by animateFloatAsState(
-        targetValue = if (selected) 1.1f else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "scale"
-    )
-
-    Box(
+    Column(
         modifier = Modifier
-            .width(70.dp)
-            .clip(RoundedCornerShape(28.dp))
-            .background(backgroundColor)
+            .clip(RoundedCornerShape(24.dp))
             .clickable { if (!selected) onNavigate() }
-            .padding(vertical = 6.dp),
-        contentAlignment = Alignment.Center
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .scale(scale)
-                .alpha(alpha),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
-            screen.icon?.let {
-                Icon(
-                    imageVector = it,
-                    contentDescription = null,
-                    tint = contentColor,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-            screen.titleResId?.let {
-                Text(
-                    text = stringResource(it),
-                    color = contentColor,
-                    fontSize = 8.sp,
-                    fontWeight = if (selected) FontWeight.ExtraBold else FontWeight.Medium,
-                    lineHeight = 12.sp
-                )
-            }
+        screen.icon?.let {
+            Icon(
+                imageVector = it,
+                contentDescription = null,
+                tint = iconColor,
+                modifier = Modifier.size(24.dp)
+            )
         }
+        
+        // Dot indicator for selected state
+        Box(
+            modifier = Modifier
+                .size(4.dp)
+                .clip(CircleShape)
+                .background(if (selected) MaterialTheme.colorScheme.primary else Color.Transparent)
+        )
     }
 }
 
