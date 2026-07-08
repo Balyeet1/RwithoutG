@@ -2,10 +2,9 @@ package com.example.rewardwithoutguilt.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.StickyNote2
-import androidx.compose.material.icons.outlined.Assignment
-import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Extension
-import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Assignment
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.CenterFocusStrong
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.rewardwithoutguilt.R
@@ -16,14 +15,14 @@ sealed class Screen(
     val icon: ImageVector? = null
 ) {
     object Greeting : Screen("greeting")
-    object Tasks : Screen("tasks", R.string.nav_tasks, Icons.Outlined.Assignment)
-    object Rewards : Screen("rewards", R.string.nav_rewards, Icons.Outlined.Star)
-    object CompletedTask : Screen("completed_task", R.string.nav_completed, Icons.Outlined.CheckCircle)
+    object Tasks : Screen("tasks", R.string.nav_tasks, Icons.Default.Assignment)
+    object Rewards : Screen("rewards", R.string.nav_rewards, Icons.Default.Star)
+    object CompletedTask : Screen("completed_task", R.string.nav_completed, Icons.Default.CheckCircle)
     object Notes : Screen("notes", R.string.nav_notes, Icons.AutoMirrored.Filled.StickyNote2)
     object EditGreeting : Screen("edit_greeting", R.string.nav_edit_greeting)
     object NotificationSettings : Screen("notification_settings", R.string.menu_notification_settings)
     object Focus : Screen("focus", R.string.nav_focus, Icons.Default.CenterFocusStrong)
-    object Puzzle : Screen("puzzle", R.string.nav_puzzle, Icons.Outlined.Extension)
+    object Puzzle : Screen("puzzle", R.string.nav_puzzle)
     object CreateNote : Screen("create_note?noteId={noteId}&category={category}") {
         fun createRoute(noteId: String? = null, category: String? = null): String {
             val builder = StringBuilder("create_note")

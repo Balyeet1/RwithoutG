@@ -124,16 +124,15 @@ fun SetupNavGraph(navController: NavHostController) {
     val bottomBarScreens = listOf(
         Screen.Tasks,
         Screen.CompletedTask,
-        Screen.Puzzle,
         Screen.Rewards,
-        Screen.Notes,
-
+        Screen.Notes
     )
     val showBottomBar = bottomBarScreens.any { it.route == currentRoute }
     val showTopBar = currentRoute != Screen.Greeting.route && currentRoute != Screen.CreateNote.route
     val isChildScreen = currentRoute == Screen.EditGreeting.route ||
             currentRoute == Screen.NotificationSettings.route ||
             currentRoute == Screen.Focus.route ||
+            currentRoute == Screen.Puzzle.route ||
             currentRoute?.startsWith("create_task") == true ||
             currentRoute == Screen.AddTaskSelection.route ||
             currentRoute == Screen.TaskTemplateList.route ||
@@ -178,7 +177,7 @@ fun SetupNavGraph(navController: NavHostController) {
                             if (showBottomBar && title.isNotEmpty()) {
                                 Spacer(modifier = Modifier.width(8.dp))
                             }
-                            if (showBottomBar && currentRoute != Screen.Notes.route && currentRoute != Screen.Puzzle.route) {
+                            if (showBottomBar && currentRoute != Screen.Notes.route) {
                                 PointsDisplay()
                             }
                         }
